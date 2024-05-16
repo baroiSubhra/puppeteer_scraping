@@ -1,0 +1,20 @@
+{
+  "name": "valuepicker-scraper",
+  "version": "1.0.0",
+  "description": "this is a valuepicker scraper",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "keywords": [
+    "scrape"
+  ],
+  "author": "subhra jyoti baroi",
+  "license": "ISC",
+  "dependencies": {
+    "csv-writer": "^1.6.0",
+    "puppeteer": "^22.9.0"
+  }
+}
