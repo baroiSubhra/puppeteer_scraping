@@ -14,7 +14,9 @@
   "author": "subhra jyoti baroi",
   "license": "ISC",
   "dependencies": {
+    "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
-    "puppeteer": "^22.9.0"
+    "puppeteer": "^22.9.0",
+    "winston": "^3.13.0"
   }
 }

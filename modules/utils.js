@@ -1,6 +1,7 @@
 import { createObjectCsvWriter } from "csv-writer";
 import { promises as fs } from "fs";
 import path from "path";
+import csv from "csv-parser";
 
 export const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -20,24 +21,39 @@ export const scrollAndMountRequiredNoOfElements = async (
   try {
     while (noOfContent <= requireNoOfContent) {
       await scrollToBottom(page);
-      noOfContent = await page.evaluate(() => {
+      noOfContent = await page.evaluate((selector) => {
         return document.querySelectorAll(selector).length;
-      });
+      }, selector);
     }
-    console.log("Final No Of Content", noOfContent);
   } catch (e) {
     console.error(e);
   }
 };
 
-export const createCsv = async (folderPath, header, values) => {
-  const today = new Date().valueOf();
-  const stringDate = getDateInStringFormat(today, "_");
-  await createDirectoryStructure(folderPath);
+export const scrollAndMountRequiredAllElementsInThread = async (
+  page,
+  selector
+) => {
+  let noOfContent = await page.evaluate((selector) => {
+    return document.querySelectorAll(selector).length;
+  }, selector);
+  if (noOfContent != 0) return;
+  try {
+    while (noOfContent == 0) {
+      await scrollToBottom(page);
+      noOfContent = await page.evaluate((selector) => {
+        return document.querySelectorAll(selector).length;
+      }, selector);
+    }
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+export const createCsv = async (baseFolder, filePath, header, values) => {
+  await createDirectoryStructure(baseFolder);
   const csvWriter = createObjectCsvWriter({
-    path: `${folderPath}/collection_${stringDate}_first_${
-      values?.length
-    }_values_id_${today.valueOf()}`,
+    path: filePath,
     header,
   });
   return csvWriter.writeRecords(values);
@@ -62,4 +78,38 @@ export const getDateInStringFormat = (unicodeDate, delimiter = "-") => {
     date.getMonth() + 1
   }${delimiter}${date.getFullYear()}`;
   return stringDate;
+};
+
+// Create a function to read and parse the CSV file
+const readCSV = async (filePath) => {
+  try {
+    const fileHandle = await fs.open(filePath, "r");
+    const results = [];
+    await new Promise((resolve, reject) => {
+      fileHandle
+        .createReadStream()
+        .pipe(csv())
+        .on("data", (row) => {
+          results.push(row);
+        })
+        .on("end", () => {
+          resolve(results);
+        })
+        .on("error", (error) => {
+          reject(error);
+        });
+    });
+    await fileHandle.close();
+    return results;
+  } catch (error) {
+    throw new Error(`Error reading CSV file: ${error.message}`);
+  }
+};
+
+export const getCsvData = async (filePath) => {
+  try {
+    return await readCSV(filePath);
+  } catch (error) {
+    console.log(error);
+  }
 };

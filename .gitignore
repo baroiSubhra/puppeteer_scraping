@@ -15,3 +15,7 @@ lerna-debug.log*
 
 # Optional eslint cache
 .eslintcache
+
+# csv collections
+threads_collections/*
+individual_threads/*
